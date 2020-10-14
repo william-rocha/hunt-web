@@ -73,6 +73,7 @@ const Main = () => {
   const [products, setProducts] = useState([]);
   const [productInfo, setProductInfo] = useState({});
   const [page, setPage] = useState(1);
+  
   useEffect(() => {
     loadProducts();
   }, []);

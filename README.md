@@ -105,6 +105,9 @@ const Main = () => {
     <>
       <div className="product-list">
         {products.map((product) => (
+	
+	// lembre de usar as tags semanticamente
+	
           <article key={products._id}>
             <strong>{product.title}</strong>
             <p>{product.description}</p>
@@ -128,7 +131,10 @@ const Main = () => {
 export default Main;
 ```
 e seu arquivo .css
+
 ```css 
+/* usse a classe que define o componete para fechar o escopo */
+
 .product-list {
     max-width: 700px;
     margin: 20px auto 0;
@@ -187,10 +193,13 @@ e seu arquivo .css
     cursor: pointer;
 }
 
+// classe para btns disabled
+
 .product-list .actions button[disabled] {
     opacity: 0.5;
     cursor: default;
 }
+
 .product-list .actions button[disabled]:hover {
     opacity: 0.5;
 }
@@ -200,6 +209,7 @@ e seu arquivo .css
 }
 ```
 crie o arquivo `pages/product/index.js`
+
 ```jsx
 import React, { useState, useEffect } from "react";
 import api from "../../services/api";
@@ -207,21 +217,25 @@ import "./styles.css";
 
 const Product = (props) => {
   const [product, setProduct] = useState({});
+  
   useEffect(() => {
     findProduct();
   }, []);
 
   const findProduct = async () => {
+  
+    // pegando o params (/:id)
+    
     const { id } = props.match.params;
     const response = await api.get(`/products/${id}`);
     setProduct(response.data);
   };
+  
   return (
     <>
       <div className="product-info">
         <h1>{product.title}</h1>
         <p>{product.description}</p>
-
         <p>
           URL: <a href={product.url}>{product.url}</a>
         </p>

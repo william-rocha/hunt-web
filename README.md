@@ -1,68 +1,260 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## hunt-web
 
-## Available Scripts
+crie o componente header
+```jsx
+import React from 'react';
+import "./styles.css";
 
-In the project directory, you can run:
+const Header = () => <header id="main-header">JsHunt</header>
+ 
+export default Header;
+```
+> lembre de usar o id para únicos
+```css
+header#main-header {
+    height: 60px;
+    background:#da552f;
+    font-size: 18px;
+    font-weight: bold;
+    color: #FFF;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+```
+crie o arquivo `service/api.js`
 
-### `yarn start`
+```jsx
+import axios from 'axios'
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+const api = axios.create({baseURL: "http://localhost:3001/api"})
+// api da rocketseat
+// const api = axios.create({baseURL: "http://rocketseat-node.herokuapp.com/api"})
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+export default api
+```
+crie a rota
+```jsx 
+import React from 'react';
+import { BrowserRouter, Switch, Route } from 'react-router-dom';
+import Main from './pages/main';
+import Product from './pages/product';
 
-### `yarn test`
+const Routes = () => (
+        <BrowserRouter>
+            <Switch>
+                <Route path="/" exact component={Main}/>
+                <Route path="/products/:id" component={Product}/>
+            </Switch>
+        </BrowserRouter>
+)
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+export default Routes
+```
+crie o arquivo `src/app.js`
+```jsx
+const App = () => ( 
+    <div>
+      <Header />
+      <Routes />
+    </div>
+)
+export default App;
+```
+crie o arquivo `pages/main/index.js`
 
-### `yarn build`
+```jsx
+import React, { useEffect, useState } from "react";
+import api from "../../services/api";
+import "./styles.css";
+import { Link } from "react-router-dom";
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+const Main = () => {
+  const [products, setProducts] = useState([]);
+  const [productInfo, setProductInfo] = useState({});
+  const [page, setPage] = useState(1);
+  useEffect(() => {
+    loadProducts();
+  }, []);
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+  const loadProducts = async (pageNumber = 1) => {
+    console.log("page", page);
+    const response = await api.get(`/products?page=${pageNumber}`);
+    const { docs, ...productInfo } = response.data;
+    console.log("docs", docs);
+    setProducts(docs);
+    setProductInfo(productInfo);
+    setPage(pageNumber);
+  };
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+  const nextPage = () => {
+    console.log("productInfo.pages", productInfo.pages);
+    if (page === productInfo.pages) return;
+    const pageNumber = page + 1;
+    loadProducts(pageNumber);
+  };
 
-### `yarn eject`
+  const prevPage = () => {
+    if (page === 1) return;
+    const pageNumber = page - 1;
+    loadProducts(pageNumber);
+  };
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+  return (
+    <>
+      <div className="product-list">
+        {products.map((product) => (
+          <article key={products._id}>
+            <strong>{product.title}</strong>
+            <p>{product.description}</p>
+            <Link to={`/products/${product._id}`}>Acessar</Link>
+            {/* <a href={product.url}>Acessar</a> */}
+          </article>
+        ))}
+        <div className="actions">
+          <button disabled={page === 1} onClick={prevPage}>
+            Anterior
+          </button>
+          <button disabled={page === productInfo.pages} onClick={nextPage}>
+            Proximo
+          </button>
+        </div>
+      </div>
+    </>
+  );
+};
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+export default Main;
+```
+e seu arquivo .css
+```css 
+.product-list {
+    max-width: 700px;
+    margin: 20px auto 0;
+    padding: 0 20px;
+}
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+.product-list article {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+.product-list article p {
+    font-size: 16px;
+    color: #999;
+    margin-top: 5px;
+    line-height: 24px;
+}
 
-## Learn More
+.product-list article a {
+    height: 42px;
+    border: 2px solid #da552f;
+    background: none;
+    margin-top: 10px;
+    color: #da552f;
+    font-weight: bold;
+    font-size: 16px;
+    text-decoration: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s;
+}
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+.product-list article a:hover {
+    background: #da552f;
+    color: #fff;
+}
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+.product-list .actions {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
 
-### Code Splitting
+.product-list .actions button {
+    padding: 10px;
+    border-radius: 5px;
+    border: 0px;
+    background: #da552f;
+    color: #FFF;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
+.product-list .actions button[disabled] {
+    opacity: 0.5;
+    cursor: default;
+}
+.product-list .actions button[disabled]:hover {
+    opacity: 0.5;
+}
 
-### Analyzing the Bundle Size
+.product-list .actions button:hover {
+    opacity: 0.7;
+}
+```
+crie o arquivo `pages/product/index.js`
+```jsx
+import React, { useState, useEffect } from "react";
+import api from "../../services/api";
+import "./styles.css";
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
+const Product = (props) => {
+  const [product, setProduct] = useState({});
+  useEffect(() => {
+    findProduct();
+  }, []);
 
-### Making a Progressive Web App
+  const findProduct = async () => {
+    const { id } = props.match.params;
+    const response = await api.get(`/products/${id}`);
+    setProduct(response.data);
+  };
+  return (
+    <>
+      <div className="product-info">
+        <h1>{product.title}</h1>
+        <p>{product.description}</p>
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
+        <p>
+          URL: <a href={product.url}>{product.url}</a>
+        </p>
+      </div>
+    </>
+  );
+};
 
-### Advanced Configuration
+export default Product;
+```
+arquivo css
+```css
+.product-info {
+	max-width: 700px;
+	margin: 20px auto 0;
+	padding: 20px;
+	background: #fff;
+	border-radius: 5px;
+	border: 1px solid #ddd;
+}
+	
+.product-info h1 {
+	font-size: 32px;
+}
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
+.product-info p {
+	color: #666;
+	line-height: 24px;
+	margin-top: 5px;
+}
 
-### Deployment
+.product-info p a {
+	color: #069;
+}
+```
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
 
-### `yarn build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify

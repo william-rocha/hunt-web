@@ -78,6 +78,7 @@ const Main = () => {
     loadProducts();
   }, []);
 
+// async, spread, desistruturação
   const loadProducts = async (pageNumber = 1) => {
     console.log("page", page);
     const response = await api.get(`/products?page=${pageNumber}`);
